@@ -4,6 +4,7 @@ import argparse
 from threading import Thread
 from time import sleep
 
+from lib.player import Player
 from lib.region import Region
 
 
@@ -24,7 +25,8 @@ def parse_args():
 def main():
     args = parse_args()
 
-    r = Region(seed=args.seed)
+    p = Player()
+    r = Region(seed=args.seed, controller=p)
 
     step = 0
     while True:
