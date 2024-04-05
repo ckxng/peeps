@@ -1,4 +1,3 @@
-from game.container import container_trait
 from game.location import Location
 
 

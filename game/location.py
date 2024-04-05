@@ -12,5 +12,3 @@ class Location:
         return {
             "type": self.__class__.__name__,
         }
-
-

@@ -1,16 +1,17 @@
+import random
+from base64 import b64encode, b64decode
 from json import dumps
+from math import floor
 from typing import List, Optional, Dict
-from game.tile import Tile
+from uuid import uuid4
+from zlib import compress, decompress
+
+from ent.bot import Bot
 from ent.item import Item
+from ent.wall import Wall
 from game.source import Source
 from game.spawn import Spawn
-from ent.bot import Bot
-from ent.wall import Wall
-import random
-from math import floor
-from zlib import compress, decompress
-from base64 import b64encode, b64decode
-from uuid import uuid4
+from game.tile import Tile
 
 DEFAULT_GRID_X = 30
 DEFAULT_GRID_Y = 10
@@ -113,11 +114,11 @@ class Region:
             if random.choice([True, False]):
                 # Horizontal wall
                 for i in range(wall_length):
-                    wall_grid[(start_x + i)%width][start_y] = Wall(region_id, start_x + i, start_y)
+                    wall_grid[(start_x + i) % width][start_y] = Wall(region_id, start_x + i, start_y)
             else:
                 # Vertical wall
                 for i in range(wall_length):
-                    wall_grid[start_x][(start_y + i)%height] = Wall(region_id, start_x, start_y + i)
+                    wall_grid[start_x][(start_y + i) % height] = Wall(region_id, start_x, start_y + i)
 
         return wall_grid
 

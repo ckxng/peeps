@@ -1,5 +1,6 @@
 from typing import Dict
 from uuid import uuid4
+
 from const.stat import Stat, StatType
 
 
@@ -49,5 +50,3 @@ class BaseEntity:
         self._region = region
         self._x = x
         self._y = y
-
-

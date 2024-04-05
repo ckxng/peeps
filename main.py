@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
-from game.region import Region
-from json import dumps
 import argparse
+
+from game.region import Region
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        prog='peeps', 
+        prog='peeps',
         description='Simulate a world of little peeps',
         epilog='All your base are belong to us.',
     )
@@ -17,14 +18,15 @@ def parse_args():
     parser.add_argument('-s', '--seed', type=int, default=None)
     return parser.parse_args()
 
+
 def main():
     args = parse_args()
     r = Region(seed=args.seed)
-    if(args.compressed):
+    if (args.compressed):
         print(r.to_compressed_json(show_all=args.all))
-    if(args.json):
+    if (args.json):
         print(r.to_json(show_all=args.all))
-    if(args.region):
+    if (args.region):
         print(r)
 
 

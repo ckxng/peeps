@@ -1,5 +1,6 @@
-from game.tile import Tile
 from uuid import uuid4
+
+from game.tile import Tile
 
 
 class Spawn(Tile):
