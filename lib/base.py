@@ -1,15 +1,17 @@
 from typing import Dict
 from uuid import uuid4
 
-from const.stat import Stat, StatType
+from lib.basecontroller import BaseControllerEntity
+from lib.stat import Stat, StatType
 
 
 class BaseEntity:
-    def __init__(self, region, x: int, y: int):
+    def __init__(self, region, x: int, y: int, controller: BaseControllerEntity = None):
         self._id = str(uuid4())
         self._region = region
         self._x = x
         self._y = y
+        self._mind = controller
         self.stats: Dict[StatType, Stat] = {
             StatType.HEALTH: Stat(type=StatType.HEALTH, value=1, max=1),
             StatType.CAPACITY: Stat(type=StatType.CAPACITY, value=0, max=0),

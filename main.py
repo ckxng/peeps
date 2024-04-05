@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 import argparse
+from threading import Thread
+from time import sleep
 
-from game.region import Region
+from lib.region import Region
 
 
 def parse_args():
@@ -21,14 +23,23 @@ def parse_args():
 
 def main():
     args = parse_args()
+
     r = Region(seed=args.seed)
-    if (args.compressed):
-        print(r.to_compressed_json(show_all=args.all))
-    if (args.json):
-        print(r.to_json(show_all=args.all))
-    if (args.region):
-        print(r)
+
+    step = 0
+    while True:
+        print("step", step)
+        if args.compressed:
+            print(r.to_compressed_json(show_all=args.all))
+        if args.json:
+            print(r.to_json(show_all=args.all))
+        if args.region:
+            print(r)
+
+        r.step()
+        step += 1
+        sleep(1)
 
 
 if __name__ == '__main__':
-    main()
+    main_th = Thread(target=main).start()

@@ -1,9 +1,9 @@
-from const.resource import ResourceType
-from const.stat import StatType
-from ent.base import BaseEntity
+from lib.base import BaseEntity
+from lib.resource import ResourceType
+from lib.stat import StatType
 
 
-class Item(BaseEntity):
+class Pile(BaseEntity):
     def __init__(self, region: str, x: int, y: int, resource: ResourceType, qty=1):
         super().__init__(region=region, x=x, y=x)
         self.type = resource

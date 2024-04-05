@@ -6,12 +6,14 @@ from typing import List, Optional, Dict
 from uuid import uuid4
 from zlib import compress, decompress
 
-from ent.bot import Bot
-from ent.item import Item
-from ent.wall import Wall
-from game.source import Source
-from game.spawn import Spawn
-from game.tile import Tile
+from lib.basecontroller import BaseControllerEntity
+from lib.basemap import BaseMapEntity
+from lib.basemovable import BaseMovableEntity
+from lib.pile import Pile
+from lib.source import Source
+from lib.spawn import Spawn
+from lib.tile import Tile
+from lib.wall import Wall
 
 DEFAULT_GRID_X = 30
 DEFAULT_GRID_Y = 10
@@ -19,7 +21,8 @@ MIN_GRID_SIZE = 10
 
 
 class Region:
-    def __init__(self, width=DEFAULT_GRID_X, height=DEFAULT_GRID_Y, seed: int = None):
+    def __init__(self, controller: BaseControllerEntity = None, width=DEFAULT_GRID_X, height=DEFAULT_GRID_Y,
+                 seed: int = None):
         """
         Initializes a randomly generated region of size (width, height)
         :param width:
@@ -35,17 +38,19 @@ class Region:
         self._id = str(uuid4())
         # TODO register regions with a global lookup so entities can find their regions
 
+        self._controller = controller
+
         self._width = width
         self._height = height
 
         # passable base layer, walk on
-        self._tile_grid = Region._gen_tile_grid(width, height)
+        self._tile_grid = Region._gen_tile_grid(self._id, self._controller, width, height)
 
         # passable item layer, step over
         self._item_grid = Region._gen_item_grid(width, height)
 
         # impassable, interact
-        self._bot_grid = Region._gen_item_grid(width, height)
+        self._bot_grid = Region._gen_bot_grid(width, height)
 
         # impassable, walls
         self._wall_grid = Region._gen_wall_grid(self._id, width, height)
@@ -54,26 +59,31 @@ class Region:
         return self._id
 
     @staticmethod
-    def _gen_tile_grid(width=DEFAULT_GRID_X, height=DEFAULT_GRID_Y) -> List[List[Tile]]:
+    def _gen_tile_grid(region_id: str, controller: BaseControllerEntity = None, width=DEFAULT_GRID_X,
+                       height=DEFAULT_GRID_Y) -> List[List[BaseMapEntity]]:
         """
         Generates a grid of tiles with Sources randomly spaced
         :param width: grid width (y)
         :param height: grid height (y)
         :return: a grid indexed as [x][y]
         """
-        tile_grid: List[List[Tile]] = [[Tile() for _ in range(height)] for _ in range(width)]
+        tile_grid: List[List[BaseMapEntity]] = [[Tile(region_id, x, y) for y in range(height)] for x in range(width)]
 
         # place sources at least 2 from the edge
         num_sources = random.randint(1, floor((width * height) / 200) + 1)
         for i in range(num_sources):
-            tile_grid[random.randint(2, width - 3)][random.randint(2, height - 3)] = Source()
+            x = random.randint(2, width - 3)
+            y = random.randint(2, height - 3)
+            tile_grid[x][y] = Source(region_id, x, y)
 
         # place a single spawn point 3 from the edge
-        tile_grid[random.randint(3, width - 4)][random.randint(3, height - 4)] = Spawn()
+        x = random.randint(3, width - 4)
+        y = random.randint(3, height - 4)
+        tile_grid[x][y] = Spawn(region_id, x, y, controller=controller)
         return tile_grid
 
     @staticmethod
-    def _gen_item_grid(width=DEFAULT_GRID_X, height=DEFAULT_GRID_Y) -> List[List[Optional[Item]]]:
+    def _gen_item_grid(width=DEFAULT_GRID_X, height=DEFAULT_GRID_Y) -> List[List[Optional[Pile]]]:
         """
         Generates an empty grid
         :param width: grid width (y)
@@ -83,7 +93,7 @@ class Region:
         return [[None for _ in range(height)] for _ in range(width)]
 
     @staticmethod
-    def _gen_bot_grid(width=DEFAULT_GRID_X, height=DEFAULT_GRID_Y) -> List[List[Optional[Bot]]]:
+    def _gen_bot_grid(width=DEFAULT_GRID_X, height=DEFAULT_GRID_Y) -> List[List[Optional[BaseMovableEntity]]]:
         """
         Generates an empty grid
         :param width: grid width (y)
@@ -127,7 +137,7 @@ class Region:
 
     def _gen_visible_grid(self) -> List[List[any]]:
         """
-        Generate the visible grid which will be exposed to the player.  Earlier
+        Generate the visible grid which will be exposed to the controller.  Earlier
         items in this list mask later ones:
         1. walls
         2. bots
