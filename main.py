@@ -30,14 +30,17 @@ def main():
 
     step = 0
     while True:
-        print("step", step)
-        if args.compressed:
-            print(r.to_compressed_json(show_all=args.all))
+        # print("step", step)
+        # if args.compressed:
+        #     print(r.to_compressed_json(show_all=args.all))
         if args.json:
             print(r.to_json(show_all=args.all))
-        if args.region:
-            print(r)
-
+            return r.to_json(show_all=args.all)
+            # with open("region.json", "w") as f:
+            #     f.write(r.to_json(show_all=args.all))
+            #     exit()
+        # if args.region:
+        #     print(r)
         r.step()
         step += 1
         sleep(1)

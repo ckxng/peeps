@@ -124,11 +124,12 @@ class Region:
             if random.choice([True, False]):
                 # Horizontal wall
                 for i in range(wall_length):
-                    wall_grid[(start_x + i) % width][start_y] = Wall(region_id, start_x + i, start_y)
+                    wall_grid[(start_x + i) % width][start_y] = Wall(region_id, (start_x + i) % width, start_y)
             else:
                 # Vertical wall
                 for i in range(wall_length):
-                    wall_grid[start_x][(start_y + i) % height] = Wall(region_id, start_x, start_y + i)
+                    wall_grid[start_x][(start_y + i) % height] = Wall(region_id, start_x, (start_y + i) % height)
+
 
         return wall_grid
 

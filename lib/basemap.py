@@ -4,7 +4,7 @@ from lib.stat import StatType
 
 class BaseMapEntity(BaseEntity):
     def __init__(self, region: str, x: int, y: int):
-        super().__init__(region=region, x=x, y=x)
+        super().__init__(region=region, x=x, y=y)
         self.stats[StatType.HEALTH].upgrade(499999)  # be sturdy
         self.stats[StatType.LIFETIME].immutable(True)
         self.stats[StatType.CAPACITY].immutable(True)
