@@ -1,48 +1,70 @@
 #!/usr/bin/env python3
 
 import argparse
-from threading import Thread
-from time import sleep
+import asyncio
+import logging
+from functools import partial
+
+from websockets.server import serve
 
 from lib.player import Player
 from lib.region import Region
 
+logger = logging.getLogger('websockets')
+logger.addHandler(logging.StreamHandler())
 
-def parse_args():
+
+async def respond(websocket, region):
+    async for message in websocket:
+        if message == 'json':
+            await websocket.send(region.to_json())
+        elif message == 'compressed_json':
+            await websocket.send(region.to_compressed_json())
+        else:
+            await websocket.send(f"echo: {message}")
+
+
+async def start_server(region: Region, host: str, port: int):
+    async with serve(partial(respond, region=region), host=host, port=port):
+        await asyncio.Future()
+
+
+async def parse_args():
     parser = argparse.ArgumentParser(
         prog='peeps',
         description='Simulate a world of little peeps',
         epilog='All your base are belong to us.',
     )
-    parser.add_argument('-a', '--all', action='store_true')
-    parser.add_argument('-r', '--region', action='store_true')
-    parser.add_argument('-j', '--json', action='store_true')
-    parser.add_argument('-c', '--compressed', action='store_true')
-    parser.add_argument('-q', '--quiet', action='store_true')
     parser.add_argument('-s', '--seed', type=int, default=None)
+    parser.add_argument('-v', '--verbose', action='store_true')
+    parser.add_argument('-H', '--host', type=str, default='0.0.0.0')
+    parser.add_argument('-P', '--port', type=int, default='8080')
     return parser.parse_args()
 
 
-def main():
-    args = parse_args()
+async def simulate(region):
+    while True:
+        region.step()
+        await asyncio.sleep(1)
+
+
+async def main():
+    args = await parse_args()
+
+    if args.verbose:
+        logger.setLevel(logging.DEBUG)
 
     p = Player()
     r = Region(seed=args.seed, controller=p)
 
-    step = 0
-    while True:
-        if not args.quiet:
-            print("step", step)
-        if args.compressed:
-            print(r.to_compressed_json(show_all=args.all))
-        if args.json:
-            print(r.to_json(show_all=args.all))
-        if args.region:
-            print(r)
-        r.step()
-        step += 1
-        sleep(1)
+    ws_task = asyncio.create_task(start_server(r, args.host, args.port))
+    sim_task = asyncio.create_task(simulate(r))
+
+    await asyncio.gather(
+        ws_task,
+        sim_task,
+    )
 
 
 if __name__ == '__main__':
-    main_th = Thread(target=main).start()
+    asyncio.run(main())

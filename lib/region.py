@@ -130,7 +130,6 @@ class Region:
                 for i in range(wall_length):
                     wall_grid[start_x][(start_y + i) % height] = Wall(region_id, start_x, (start_y + i) % height)
 
-
         return wall_grid
 
     def is_passable(self, x, y):
