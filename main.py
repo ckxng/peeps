@@ -23,7 +23,6 @@ async def respond(websocket, region):
     CONNECTIONS.add(websocket)
     player: Optional[str] = None
     try:
-        want_sensor_data: bool = False
         async for message in websocket:
             if player is None and message[:6] == 'login ':
                 player = message[6:]
