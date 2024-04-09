@@ -231,6 +231,7 @@ class Region:
 
         return {
             "type": self.__class__.__name__,
+            "id": self._id,
             "width": self._width,
             "height": self._height,
             "grid": self._grid_to_lol(self._gen_visible_grid()),

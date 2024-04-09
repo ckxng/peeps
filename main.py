@@ -4,11 +4,13 @@ import argparse
 import asyncio
 import logging
 from functools import partial
+from json import dumps
 from typing import Optional
 
 import websockets
 from websockets.server import serve
 
+from lib.globals import CONTROLLERS
 from lib.player import Player
 from lib.region import Region
 
@@ -25,7 +27,10 @@ async def respond(websocket, region):
     try:
         async for message in websocket:
             if player is None and message[:6] == 'login ':
-                player = message[6:]
+                if message[6:] in CONTROLLERS.keys():
+                    player = message[6:]
+                else:
+                    await websocket.send(f"invalid")
             elif player is not None:
                 if message == 'want_sensor_data':
                     if player not in WATCHERS:
@@ -38,12 +43,16 @@ async def respond(websocket, region):
                     await websocket.send(region.to_json())
                 elif message == 'compressed_json':
                     await websocket.send("compressed_sensor_data " + region.to_compressed_json())
+                elif message == 'owned':
+                    await websocket.send("owned " + CONTROLLERS[player].to_json(show_all=True))
+            elif message == 'controllers':
+                await websocket.send("controllers " + dumps(list(CONTROLLERS.keys())))
             else:
                 await websocket.send(f"invalid")
         await websocket.wait_closed()
     finally:
         CONNECTIONS.remove(websocket)
-        if player is not None:
+        if player is not None and websocket in WATCHERS[player]:
             WATCHERS[player].remove(websocket)
 
 

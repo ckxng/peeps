@@ -1,12 +1,13 @@
-from typing import Dict
+from json import dumps
+from typing import Dict, Optional
 from uuid import uuid4
 
-from lib.basecontroller import BaseControllerEntity
 from lib.stat import Stat, StatType
 
 
 class BaseEntity:
-    def __init__(self, region, x: int, y: int, controller: BaseControllerEntity = None):
+    # controller typehint lib.basecontroller.BaseControllerEntity is circular
+    def __init__(self, region, x: int, y: int, controller: Optional[any] = None):
         self._id = str(uuid4())
         self._region = region
         self._x = x
@@ -53,6 +54,13 @@ class BaseEntity:
             ret['x'] = self._x
             ret['y'] = self._y
         return ret
+
+    def to_json(self, show_all=False) -> str:
+        """
+        Output a JSON grid representation
+        :return: JSON formatted str
+        """
+        return dumps(self.to_dict(show_all=show_all))
 
     def update_location(self, region: str, x: int, y: int):
         self._region = region
