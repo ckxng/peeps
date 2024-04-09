@@ -199,7 +199,7 @@ class Region:
         return s
 
     @staticmethod
-    def _grid_to_lol(grid: List[List[any]]) -> List[List[Dict[str, any]]]:
+    def _grid_to_lol(grid: List[List[any]], show_all: bool = False) -> List[List[Dict[str, any]]]:
         """
         Traverse a grid and render all cells as dicts inside a list of lists
         :param grid:
@@ -210,7 +210,7 @@ class Region:
             x = []
             for cell in grid_x:
                 if cell is not None:
-                    x.append(cell.to_dict())
+                    x.append(cell.to_dict(show_all=show_all))
                 else:
                     x.append({"type": "None"})
             g.append(x)
@@ -220,12 +220,13 @@ class Region:
         if show_all:
             return {
                 "type": self.__class__.__name__,
+                "id": self._id,
                 "width": self._width,
                 "height": self._height,
-                "tile_grid": self._grid_to_lol(self._tile_grid),
-                "wall_grid": self._grid_to_lol(self._wall_grid),
-                "bot_grid": self._grid_to_lol(self._bot_grid),
-                "item_grid": self._grid_to_lol(self._item_grid),
+                "tile_grid": self._grid_to_lol(self._tile_grid, show_all=show_all),
+                "wall_grid": self._grid_to_lol(self._wall_grid, show_all=show_all),
+                "bot_grid": self._grid_to_lol(self._bot_grid, show_all=show_all),
+                "item_grid": self._grid_to_lol(self._item_grid, show_all=show_all),
             }
 
         return {
@@ -235,12 +236,12 @@ class Region:
             "grid": self._grid_to_lol(self._gen_visible_grid()),
         }
 
-    def to_json(self, show_all=False):
+    def to_json(self, show_all=False) -> str:
         """
         Output a JSON grid representation
         :return: JSON formatted str
         """
-        return dumps(self.to_dict(show_all))
+        return dumps(self.to_dict(show_all=show_all))
 
     def to_compressed_json(self, show_all=False):
         """

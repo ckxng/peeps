@@ -90,7 +90,12 @@ class Stat:
             return self.increment(self._natural_step)
         return self._value
 
-    def to_dict(self) -> Dict[str, any]:
+    def to_dict(self, show_all: bool = False) -> Dict[str, any]:
+        if not show_all:
+            return {
+                "type": self._type.name,
+                "value": self._value,
+            }
         return {
             "type": self._type.name,
             "value": self._value,

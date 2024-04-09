@@ -1,3 +1,5 @@
+from typing import Dict
+
 from lib.base import BaseEntity
 from lib.basecontroller import BaseControllerEntity
 from lib.stat import StatType
@@ -13,3 +15,6 @@ class BaseMovableEntity(BaseEntity):
 
     def __str__(self):
         return "&"
+
+    def to_dict(self, show_all: bool = False, show_id: bool = False) -> Dict[str, any]:
+        return super().to_dict(show_all=show_all, show_id=True)

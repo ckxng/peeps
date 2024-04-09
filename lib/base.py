@@ -32,22 +32,27 @@ class BaseEntity:
             self.stats[k].step()
 
     @staticmethod
-    def _stats_to_dict(stats: Dict[StatType, Stat], show_immutable: bool = False) -> Dict[str, Dict[str, any]]:
+    def _stats_to_dict(stats: Dict[StatType, Stat], show_all: bool = False) -> Dict[str, Dict[str, any]]:
         s = {}
         for k, v in stats.items():
-            if not v.immutable() or show_immutable:
+            if not v.immutable() or show_all:
                 s[k.name] = v.to_dict()
         return s
 
-    def to_dict(self, show_immutable: bool = False):
-        return {
-            "id": self._id,
+    def to_dict(self, show_all: bool = False, show_id: bool = False) -> Dict[str, any]:
+        ret = {
             "type": self.__class__.__name__,
-            "stats": self._stats_to_dict(self.stats, show_immutable=show_immutable),
-            "region": self._region,
-            "x": self._x,
-            "y": self._y,
         }
+        if show_all or show_id:
+            ret['id'] = self._id,
+        stats = self._stats_to_dict(self.stats, show_all=show_all)
+        if stats:
+            ret['stats'] = stats
+        if show_all:
+            ret['region'] = self._region
+            ret['x'] = self._x
+            ret['y'] = self._y
+        return ret
 
     def update_location(self, region: str, x: int, y: int):
         self._region = region

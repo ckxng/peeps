@@ -39,13 +39,14 @@ async def parse_args():
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('-H', '--host', type=str, default='0.0.0.0')
     parser.add_argument('-P', '--port', type=int, default='8080')
+    parser.add_argument('-t', '--timer', type=int, default=1)
     return parser.parse_args()
 
 
-async def simulate(region):
+async def simulate(region, timer):
     while True:
         region.step()
-        await asyncio.sleep(1)
+        await asyncio.sleep(timer)
 
 
 async def main():
@@ -58,7 +59,7 @@ async def main():
     r = Region(seed=args.seed, controller=p)
 
     ws_task = asyncio.create_task(start_server(r, args.host, args.port))
-    sim_task = asyncio.create_task(simulate(r))
+    sim_task = asyncio.create_task(simulate(r, args.timer))
 
     await asyncio.gather(
         ws_task,
