@@ -1,7 +1,9 @@
 import random
 from base64 import b64encode, b64decode
+from collections import defaultdict
 from json import dumps
 from math import floor
+from queue import Queue
 from typing import List, Optional, Dict
 from uuid import uuid4
 from zlib import compress, decompress
@@ -17,12 +19,15 @@ from lib.wall import Wall
 
 DEFAULT_GRID_X = 30
 DEFAULT_GRID_Y = 10
+DEFAULT_OWNER_COMMAND_QUEUE_LEN = 20
+DEFAULT_OTHER_COMMAND_QUEUE_LEN = 20
 MIN_GRID_SIZE = 10
 
 
 class Region:
     def __init__(self, controller: BaseControllerEntity = None, width=DEFAULT_GRID_X, height=DEFAULT_GRID_Y,
-                 seed: int = None):
+                 seed: int = None, owner_command_queue_len: int = DEFAULT_OWNER_COMMAND_QUEUE_LEN,
+                 other_command_queue_len: int = DEFAULT_OTHER_COMMAND_QUEUE_LEN):
         """
         Initializes a randomly generated region of size (width, height)
         :param width:
@@ -55,8 +60,17 @@ class Region:
         # impassable, walls
         self._wall_grid = Region._gen_wall_grid(self._id, width, height)
 
+        self._owner_commands = Queue(maxsize=owner_command_queue_len)
+        self._other_commands = defaultdict(default_factory=Queue(maxsize=other_command_queue_len))
+
     def id(self) -> str:
         return self._id
+
+    # def add_command(self, controller: BaseControllerEntity, command: Command):
+    #     if controller == self._controller:
+    #         self._owner_commands.put(command)
+    #     else:
+    #         self._other_commands[controller.id()].put(command)
 
     @staticmethod
     def _gen_tile_grid(region_id: str, controller: BaseControllerEntity = None, width=DEFAULT_GRID_X,

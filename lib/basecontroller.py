@@ -13,6 +13,7 @@ class BaseControllerEntity:
         CONTROLLERS[self._id] = self
         self._structures: Dict[str, BaseStructureEntity] = {}
         self._movable: Dict[str, BaseMovableEntity] = {}
+        self._compress_sensor_data = True
 
     def __del__(self):
         for k, v in self._structures.items():
@@ -60,3 +61,8 @@ class BaseControllerEntity:
         :return: JSON formatted str
         """
         return dumps(self.to_dict(show_all=show_all))
+
+    def compress_sensor_data(self, compress_sensor_data: bool = None) -> bool:
+        if compress_sensor_data is not None:
+            self._compress_sensor_data = compress_sensor_data
+        return self._compress_sensor_data

@@ -26,7 +26,9 @@ async def respond(websocket, region):
     player: Optional[str] = None
     try:
         async for message in websocket:
-            if player is None and message[:6] == 'login ':
+            if message == 'controllers':
+                await websocket.send("controllers " + dumps(list(CONTROLLERS.keys())))
+            elif player is None and message[:6] == 'login ':
                 if message[6:] in CONTROLLERS.keys():
                     player = message[6:]
                 else:
@@ -39,14 +41,18 @@ async def respond(websocket, region):
                     await websocket.send(f"watching {player} sensors")
                 elif message == 'no_want_sensor_data':
                     WATCHERS[player].remove(websocket)
+                elif message == 'compress_sensor_data':
+                    CONTROLLERS[player].compress_sensor_data(True)
+                elif message == 'uncompress_sensor_data':
+                    CONTROLLERS[player].compress_sensor_data(False)
                 elif message == 'json':
                     await websocket.send(region.to_json())
                 elif message == 'compressed_json':
                     await websocket.send("compressed_sensor_data " + region.to_compressed_json())
                 elif message == 'owned':
                     await websocket.send("owned " + CONTROLLERS[player].to_json(show_all=True))
-            elif message == 'controllers':
-                await websocket.send("controllers " + dumps(list(CONTROLLERS.keys())))
+                else:
+                    await websocket.send(f"invalid")
             else:
                 await websocket.send(f"invalid")
         await websocket.wait_closed()
@@ -81,7 +87,10 @@ async def simulate(region, timer):
         websockets.broadcast(CONNECTIONS, f"step {step}")
         for player in WATCHERS:
             for ws in WATCHERS[player]:
-                await ws.send("compressed_sensor_data " + region.to_compressed_json())
+                if CONTROLLERS[player].compress_sensor_data():
+                    await ws.send("compressed_sensor_data " + region.to_compressed_json())
+                else:
+                    await ws.send(f"sensor_data " + region.to_json())
         await asyncio.sleep(timer)
         region.step()
         step += 1
@@ -96,8 +105,8 @@ async def main():
     p = Player()
     r = Region(seed=args.seed, controller=p)
 
-    ws_task = asyncio.create_task(start_server(r, args.host, args.port))
-    sim_task = asyncio.create_task(simulate(r, args.timer))
+    ws_task = asyncio.create_task(start_server(region=r, host=args.host, port=args.port))
+    sim_task = asyncio.create_task(simulate(region=r, timer=args.timer))
 
     await asyncio.gather(
         ws_task,
